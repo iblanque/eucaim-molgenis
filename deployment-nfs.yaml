@@ -1,0 +1,381 @@
+#
+#  postgres
+# 
+# postgres pod (migrate to a NFS Volume)
+kind: Pod
+apiVersion: v1
+metadata:
+  name: postgres
+  labels:
+     app: postgres
+spec:
+  restartPolicy: Always
+  volumes:
+    - name: db-data
+      persistentVolumeClaim:
+        claimName: postgres-data-pvc
+  containers:
+    - name: postgres-image
+      image: postgres:11-alpine
+      ports:
+        - containerPort: 5432
+          name: postgres-port
+      volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: db-data
+      env:
+      - name: POSTGRES_USER
+        value: "molgenis"
+      - name: POSTGRES_PASSWORD
+        value: "molgenis"
+      - name: POSTGRES_DB
+        value: "molgenis"
+          #     command: # modified
+          #      - /bin/bash
+          #      - -c
+          #      args: 
+          #      - sleep 3600
+        
+          #      command: [ "/usr/local/bin/docker-entrypoint.sh", "-c 'shared_buffers=256MB'", "-c 'max_locks_per_transaction=1024'" ]
+          # command: [ "/usr/local/bin/docker-entrypoint.sh" ]
+          #args: [ "-c 'shared_buffers=256MB' -c 'max_locks_per_transaction=1024'" ]
+---
+# service
+kind: Service
+apiVersion: v1
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
+---
+#
+#  elastic search
+# 
+# elastic search pod (migrate to a NFS Volume)
+# memlocks limit not included.
+kind: Pod
+apiVersion: v1
+metadata:
+  name: elasticsearch
+  labels:
+     app: elasticsearch
+spec:
+  restartPolicy: Always
+  volumes:
+    - name: es-data
+      persistentVolumeClaim:
+        claimName: es-data-pvc
+  containers:
+    - name: es-image
+      image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
+      ports:
+        - containerPort: 9200
+          name: es-port
+      volumeMounts:
+        - mountPath: /usr/share/elasticsearch/data
+          name: es-data
+      env:
+      - name: cluster.name
+        value: "molgenis"
+      - name: bootstrap.memory_lock
+        value: "true"
+      - name: ES_JAVA_OPTS
+        value: "-Xms1024m -Xmx1024m"
+      - name: discovery.type
+        value: "single-node"
+      - name: xpack.security.enabled
+        value: "false"
+---
+# service
+kind: Service
+apiVersion: v1
+metadata:
+  name: es
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+  - protocol: TCP
+    port: 9200
+    targetPort: 9200
+---
+#
+# Kibana
+# 
+#  Not included:
+#  profiles:
+#      - audit
+kind: Pod
+apiVersion: v1
+metadata:
+  name: kibana
+  labels:
+     app: kibana
+spec:
+  restartPolicy: Always
+  containers:
+    - name: kibanad-image
+      image: docker.elastic.co/kibana/kibana:7.15.2
+      ports:
+        - containerPort: 5601
+          name: kibana-port
+---
+# service
+kind: Service
+apiVersion: v1
+metadata:
+  name: kibana
+spec:
+  selector:
+    app: kibana
+  ports:
+  - protocol: TCP
+    port: 5601
+    targetPort: 5601
+---
+#
+# Kibana dashboard
+# 
+#
+kind: Pod
+apiVersion: v1
+metadata:
+  name: kibana-dashboard
+  labels:
+     app: kibana-dashboard
+spec:
+  restartPolicy: Always
+#  securityContext:
+#     runAsUser: 0
+  volumes:
+    - name: kbd-data
+      persistentVolumeClaim:
+        claimName: kibanad-data-pvc
+  containers:
+    - name: kibanad-image
+      image: docker.elastic.co/kibana/kibana:7.15.2
+#      volumeMounts:
+#        - mountPath: /root/dashboard
+#          name: kbd-data
+      env:
+      - name: DASHBOARD_FILE
+        value: "https://raw.githubusercontent.com/molgenis/molgenis/master/.kibana/dashboard.json"
+#      command: [  "/bin/sh", "-c", "/root/dashboard/import.sh" ]
+---
+#
+# OpenCPU 
+# 
+kind: Pod
+apiVersion: v1
+metadata:
+  name: opencpu
+  labels:
+     app: opencpu
+spec:
+  restartPolicy: Always
+  containers:
+    - name: opencpu-image
+      image: molgenis/opencpu:opencpu-release-2019-03-20_12-07-11
+      ports:
+        - containerPort: 8004
+          name: opencpu-port
+---
+# service
+kind: Service
+apiVersion: v1
+metadata:
+  name: opencpu-srv
+spec:
+  selector:
+    app: opencpu
+  ports:
+  - protocol: TCP
+    port: 8004
+    targetPort: 8004
+---
+#
+# MINIO
+# 
+kind: Pod
+apiVersion: v1
+metadata:
+  name: minio
+  labels:
+     app: minio
+spec:
+  restartPolicy: Always
+  volumes:
+    - name: minio-data
+      persistentVolumeClaim:
+        claimName: minio-data-pvc
+  containers:
+    - name: minio-image
+#      image: quay.io/minio/minio:latest # modified, maybe better to fix the release
+      image: bitnami/minio:2019.4.23
+      volumeMounts:
+        - mountPath: /data
+          name: minio-data
+      env:
+      - name: MINIO_ACCESS_KEY
+        value: "molgenis"
+      - name: MINIO_SECRET_KEY
+        value: "molgenis"
+      command: # modified
+      - /bin/bash
+      - -c
+      args: 
+      - minio server /data
+---
+# service
+kind: Service
+apiVersion: v1
+metadata:
+  name: minio
+spec:
+  selector:
+    app: minio
+  ports:
+  - protocol: TCP
+    port: 9000
+    targetPort: 9000
+---
+
+########### MOLGENIS ######
+#
+#  molgenis server
+#
+# Volume app-data (migrate to a NFS Volume)
+# 
+# molgenis pod (migrate to a NFS Volume)
+kind: Pod
+apiVersion: v1
+metadata:
+  name: molgenis
+  labels:
+      app: molgenis
+spec:
+  restartPolicy: Always
+  securityContext:
+     runAsUser: 0
+  volumes:
+    - name: app-data
+      persistentVolumeClaim:
+        claimName: app-data-pvc
+    - name: audit-log
+      persistentVolumeClaim:
+        claimName: audit-log-pvc
+  containers:
+    - name: molgenis-app
+      image: molgenis/molgenis-app:10.1.0
+      ports:
+        - containerPort: 8080
+          name: molgenis-port
+      volumeMounts:
+        - mountPath: /home/molgenis/data
+          name: app-data
+        - mountPath: /home/molgenis/audit
+          name: audit-log
+      env:
+      - name: environment
+        value: "production"
+      - name: molgenis.home
+        value: "/home/molgenis"
+      - name: mail.username
+        value: "ibespert@gmail.com"
+      - name: mail.password
+        value: "mhNt22aymhAt18.5a"
+      - name: opencpu.uri.host
+        value: "opencpu"
+      - name: elasticsearch.hosts
+        value: "es:9200"
+      - name: db_uri
+#        value: "jdbc:postgresql://postgres/molgenis"
+        value: "jdbc:postgresql://postgres:5432/molgenis"
+      - name: db_user
+        value: "molgenis"
+      - name: db_password
+        value: "molgenis"
+      - name: admin.password
+        value: "admin"
+      - name: MINIO_BUCKET_NAME
+        value: "molgenis"
+      - name: MINIO_ENDPOINT
+        value: "http://minio:9000"
+      - name: MINIO_ACCESS_KEY
+        value: "molgenis"
+      - name: MINIO_SECRET_KEY
+        value: "molgenis"
+#      - name: CATALINA_OPTS
+#        value: "Xmx1g"
+      - name: MOLGENIS_MAX_FILE_MB
+        value: "150"
+      - name: audit.log.path
+        value: "/home/molgenis/audit/audit.log"
+#      - name: createDirs # supposedly for tomcat configuration, not working
+#        value: "false"
+---
+# service
+kind: Service
+apiVersion: v1
+metadata:
+  name: molgenis
+spec:
+  selector:
+    app: molgenis
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+---
+#
+#  Front-end
+#
+apiVersion: v1
+kind: Pod
+metadata:
+  name: frontend
+  labels:
+     app: frontend
+spec:
+  containers:
+  - name: molgenis-frontend
+    image: molgenis/molgenis-frontend:10.1.0
+    ports:
+    - containerPort: 80
+#    command: # modified
+#    - /bin/bash
+#    - -c
+#    args: 
+#    - sleep 3600
+    volumeMounts:
+    - mountPath:  /etc/nginx/proxy.d/backend.conf
+      subPath: backend.conf
+      name: backend-conf
+  volumes:
+  - name: backend-conf
+    configMap:
+      name: backend
+      items:
+      - key: backend.conf
+        path: backend.conf
+---
+# service
+kind: Service
+apiVersion: v1
+metadata:
+  name: frontend
+spec:
+  type: NodePort
+  selector:
+    app: frontend
+  ports:
+  - protocol: TCP
+    port: 80
+    name: frontend-np
+    targetPort: 80
+    nodePort: 30010

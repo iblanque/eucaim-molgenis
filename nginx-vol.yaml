@@ -1,0 +1,30 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mockup-vol
+  labels:
+    type: local
+spec:
+  storageClassName: nfs-mockup
+  persistentVolumeReclaimPolicy: Recycle
+  capacity:
+    storage: 150M
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.0.9
+    path: /mnt/nfs_share/mockup
+    readOnly: false
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mockup-vol-pvc
+spec:
+  storageClassName: nfs-mockup
+  volumeName: mockup-vol
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 16M

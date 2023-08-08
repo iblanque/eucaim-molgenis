@@ -1,0 +1,77 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-data-pvc
+spec:
+  storageClassName: nfs-postgres
+  volumeName: postgres-vol
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 150M
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: es-data-pvc
+spec:
+  storageClassName: nfs-es
+  volumeName: es-vol
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 150M
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: kibanad-data-pvc
+spec:
+  storageClassName: nfs-kibana
+  volumeName: kibana-vol
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 150M
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: minio-data-pvc
+spec:
+  storageClassName: nfs-minio
+  volumeName: minio-vol
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 150M
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: app-data-pvc
+spec:
+  storageClassName: nfs-molgenis-data
+  volumeName: app-data
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 16M
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: audit-log-pvc
+spec:
+  storageClassName: nfs-molgenis-audit
+  volumeName: audit-log
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 16M

@@ -1,0 +1,107 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgres-vol
+  labels:
+    type: local
+spec:
+  storageClassName: nfs-postgres
+  persistentVolumeReclaimPolicy: Recycle
+  capacity:
+    storage: 150M
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.0.9
+    path: /mnt/nfs_share/molgenis/postgres
+    readOnly: false
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: es-vol
+  labels:
+    type: local
+spec:
+  storageClassName: nfs-es
+  persistentVolumeReclaimPolicy: Recycle
+  capacity:
+    storage: 150M
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.0.9
+    path: /mnt/nfs_share/molgenis/elasticsearch
+    readOnly: false
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: kibana-vol
+  labels:
+    type: local
+spec:
+  storageClassName: nfs-kibana
+  persistentVolumeReclaimPolicy: Recycle
+  capacity:
+    storage: 150M
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.0.9
+    path: /mnt/nfs_share/molgenis/kibana
+    readOnly: false
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: minio-vol
+  labels:
+    type: local
+spec:
+  storageClassName: nfs-minio
+  persistentVolumeReclaimPolicy: Recycle
+  capacity:
+    storage: 150M
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.0.9
+    path: /mnt/nfs_share/molgenis/minio
+    readOnly: false
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: app-data
+  labels:
+    type: local
+spec:
+  storageClassName: nfs-molgenis-data
+  persistentVolumeReclaimPolicy: Recycle
+  capacity:
+    storage: 32M
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.0.9
+    readOnly: false
+    path: /mnt/nfs_share/molgenis/molgenis/data
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: audit-log
+  labels:
+    type: local
+spec:
+  storageClassName: nfs-molgenis-audit
+  persistentVolumeReclaimPolicy: Recycle
+  capacity:
+    storage: 32M
+  accessModes:
+    - ReadWriteOnce
+  nfs:
+    server: 10.0.0.9
+    readOnly: false
+    path: /mnt/nfs_share/molgenis/molgenis/audit

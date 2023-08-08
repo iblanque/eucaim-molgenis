@@ -1,0 +1,33 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: mockup-fs
+  labels:
+    app: mockup-fs
+spec:
+  volumes:
+    - name: mockup-vol
+      persistentVolumeClaim:
+        claimName: mockup-vol-pvc
+  containers:
+  - name: fs
+    image: tinyfilemanager/tinyfilemanager:master
+    volumeMounts:
+      - mountPath: /var/www/html/data
+        name: mockup-vol
+    ports:
+    - containerPort: 80
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: fs-service
+spec:
+  type: NodePort
+  selector:
+    app: mockup-fs
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 30011

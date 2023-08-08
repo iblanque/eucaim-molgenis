@@ -1,0 +1,69 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: eucaim-mockup
+  labels:
+    app: eucaim-mockup
+spec:
+  volumes:
+    - name: mockup-vol
+      persistentVolumeClaim:
+        claimName: mockup-vol-pvc
+  containers:
+  - name: nginx
+    image: nginx
+    volumeMounts:
+      - mountPath: /usr/share/nginx/html/
+        name: mockup-vol
+    ports:
+    - containerPort: 80
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: mockup-service-np
+spec:
+  type: NodePort
+  selector:
+    app: eucaim-mockup
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 30007
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: mockup-ssh
+  labels:
+    app: mockup-ssh
+spec:
+  volumes:
+    - name: mockup-vol
+      persistentVolumeClaim:
+        claimName: mockup-vol-pvc
+  containers:
+  - name: ubuntu-ssh
+    image: rastasheep/ubuntu-sshd:18.04
+    volumeMounts:
+      - mountPath: /data
+        name: mockup-vol
+    ports:
+    - containerPort: 22
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: mockup-ssh-np
+spec:
+  type: NodePort
+  selector:
+    app: mockup-ssh
+  ports:
+  - protocol: TCP
+    port: 22
+    targetPort: 22
+    nodePort: 30022
+
+
