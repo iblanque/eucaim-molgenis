@@ -189,7 +189,7 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: opencpu-srv
+  name: opencpu
 spec:
   selector:
     app: opencpu
