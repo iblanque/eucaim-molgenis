@@ -359,6 +359,9 @@ spec:
     - mountPath:  /etc/nginx/proxy.d/backend.conf
       subPath: backend.conf
       name: backend-conf
+    - mountPath:  /etc/nginx/nginx.conf
+      subPath: nginx.conf
+      name: nginx-conf
   volumes:
   - name: backend-conf
     configMap:
@@ -366,6 +369,12 @@ spec:
       items:
       - key: backend.conf
         path: backend.conf
+  - name: nginx-conf
+    configMap:
+      name: nginxconf
+      items:
+      - key: nginx.conf
+        path: nginx.conf
 ---
 # service
 kind: Service

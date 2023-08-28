@@ -48,7 +48,7 @@ The hierarcy used in the current deployment is:
 - `/mnt/nfs_share/molgenis/molgenis/data`
 - `/mnt/nfs_share/molgenis/molgenis/audit`
 
-Once the storage is defined, we proceed to deploy the pods and the services. First we will deploy the configmap defined in the `backend.yaml`file (the current value of `proxy_pass` of `http://molgenis.ramses.i3m.upv.es` is a consequence of the DNS redirection that will be explained in the follwing section. Here we need the address of the molgenis service (e.g. in a NodePort, it could be `http://<Public IP of the frontend>:8080`, but as UPV restricts the access to resources within its network we had to change it by a proxy DNS). Once the configmap is created, the rest of the objects can be deployed using the `deployment-nfs.yaml`file.
+Once the storage is defined, we proceed to deploy the pods and the services. First we will deploy the configmap defined in the `backend.yaml` file (the current value of `proxy_pass` of `http://molgenis.ramses.i3m.upv.es` is a consequence of the DNS redirection that will be explained in the follwing section. Here we need the address of the molgenis service (e.g. in a NodePort, it could be `http://<Public IP of the frontend>:8080`, but as UPV restricts the access to resources within its network we had to change it by a proxy DNS). Once the configmap is created, the rest of the objects can be deployed using the `deployment-nfs.yaml`file. Finally, we have added the configuration file of nginx as a separate config map to faciltate changing options (e.g. we increased the client max body size to 5Mb). This configuration file is also placed in the `backend.yaml` file.
 
 ```
 sudo kubectl apply -n eucaim -f backend.yaml
