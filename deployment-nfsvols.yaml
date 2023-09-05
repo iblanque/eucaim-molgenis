@@ -105,3 +105,21 @@ spec:
     server: 10.0.0.9
     readOnly: false
     path: /mnt/nfs_share/molgenis/molgenis/audit
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: frontend-vol
+  labels:
+    type: local
+spec:
+  storageClassName: nfs-frontend
+  persistentVolumeReclaimPolicy: Recycle
+  capacity:
+    storage: 150M
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.0.9
+    path: /mnt/nfs_share/molgenis/frontend
+    readOnly: false

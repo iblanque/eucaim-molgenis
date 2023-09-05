@@ -269,6 +269,18 @@ spec:
     - name: audit-log
       persistentVolumeClaim:
         claimName: audit-log-pvc
+    - name: server-conf
+      configMap:
+        name: tomcat-serverxml
+        items:
+        - key: server.xml
+          path: server.xml
+    - name: web-conf
+      configMap:
+        name: tomcat-webxml
+        items:
+        - key: web.xml
+          path: web.xml
   containers:
     - name: molgenis-app
       image: molgenis/molgenis-app:10.1.0
@@ -280,6 +292,12 @@ spec:
           name: app-data
         - mountPath: /home/molgenis/audit
           name: audit-log
+        - mountPath: /usr/local/tomcat/webapps.dist/docs/WEB-INF/web.xml
+          subPath: web.xml
+          name: web-conf
+        - mountPath:  /usr/local/tomcat/conf/server.xml
+          subPath: server.xml
+          name: server-conf
       env:
       - name: environment
         value: "production"
@@ -355,14 +373,23 @@ spec:
 #    - -c
 #    args: 
 #    - sleep 3600
+#    /usr/share/nginx/html
     volumeMounts:
+    - mountPath: /usr/share/nginx/html
+      name: frontend-data
     - mountPath:  /etc/nginx/proxy.d/backend.conf
       subPath: backend.conf
       name: backend-conf
     - mountPath:  /etc/nginx/nginx.conf
       subPath: nginx.conf
       name: nginx-conf
+    - mountPath:  /etc/nginx/proxy.d/lts.conf
+      subPath: lts.conf
+      name: lts-conf
   volumes:
+  - name: frontend-data
+    persistentVolumeClaim:
+      claimName: frontend-data-pvc
   - name: backend-conf
     configMap:
       name: backend
@@ -375,6 +402,12 @@ spec:
       items:
       - key: nginx.conf
         path: nginx.conf
+  - name: lts-conf
+    configMap:
+      name: ltsconf
+      items:
+      - key: lts.conf
+        path: lts.conf
 ---
 # service
 kind: Service

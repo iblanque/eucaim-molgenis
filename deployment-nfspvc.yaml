@@ -75,3 +75,16 @@ spec:
   resources:
     requests:
       storage: 16M
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: frontend-data-pvc
+spec:
+  storageClassName: nfs-frontend
+  volumeName: frontend-vol
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 150M
