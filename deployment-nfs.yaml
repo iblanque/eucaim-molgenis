@@ -496,3 +496,152 @@ spec:
     name: frontend-np
     targetPort: 80
     nodePort: 30010
+
+
+########### INGRESS ######
+# POSTGRES
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: postgres-ingress
+# spec:
+#   rules:
+#     - host: pgc-profe.info
+#       http:
+#         paths:
+#           - path: /postgres
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: postgres
+#                 port:
+#                   number: 5432
+
+# ELASTICSEARCH
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: elasticsearch-ingress
+# spec:
+#   rules:
+#     - host: pgc-profe.info
+#       http:
+#         paths:
+#           - path: /elasticsearch
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: es
+#                 port:
+#                   number: 9200
+
+# KIBANA
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: kibana-ingress
+# spec:
+#   rules:
+#     - host: pgc-profe.info
+#       http:
+#         paths:
+#           - path: /kibana
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: kibana
+#                 port:
+#                   number: 5601
+
+# KIBANA DASHBOARD
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: kibana-dashboard-ingress
+# spec:
+#   rules:
+#     - host: pgc-profe.info
+#       http:
+#         paths:
+#           - path: /kibana-dashboard
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: kibana-dashboard
+#                 port:
+#                   number: 5601
+
+# OPEN CPU
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: opencpu-ingress
+# spec:
+#   rules:
+#     - host: pgc-profe.info
+#       http:
+#         paths:
+#           - path: /opencpu
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: opencpu
+#                 port:
+#                   number: 8004
+
+# MINIO
+#apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: minio-ingress
+# spec:
+#   rules:
+#     - host: pgc-profe.info
+#       http:
+#         paths:
+#           - path: /minio
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: minio
+#                 port:
+#                   number: 9000
+
+# MOLGENIS
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: molgenis-ingress
+# spec:
+#   rules:
+#     - host: pgc-profe.info
+#       http:
+#         paths:
+#           - path: /molgenis
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: molgenis
+#                 port:
+#                   number: 8080
+
+# FRONTEND
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: frontend-ingress
+# spec:
+#   rules:
+#     - host: pgc-profe.info
+#       http:
+#         paths:
+#           - path: /frontend
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: frontend
+#                 port:
+#                   number: 80
+
+
+
