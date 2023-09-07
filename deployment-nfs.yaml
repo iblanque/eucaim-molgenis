@@ -504,12 +504,14 @@ spec:
 # kind: Ingress
 # metadata:
 #   name: postgres-ingress
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /$1
 # spec:
 #   rules:
 #     - host: pgc-profe.info
 #       http:
 #         paths:
-#           - path: /postgres
+#           - path: /postgres/?(.*)
 #             pathType: Prefix
 #             backend:
 #               service:
@@ -522,12 +524,14 @@ spec:
 # kind: Ingress
 # metadata:
 #   name: elasticsearch-ingress
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /$1
 # spec:
 #   rules:
 #     - host: pgc-profe.info
 #       http:
 #         paths:
-#           - path: /elasticsearch
+#           - path: /elasticsearch/?(.*)
 #             pathType: Prefix
 #             backend:
 #               service:
@@ -540,12 +544,14 @@ spec:
 # kind: Ingress
 # metadata:
 #   name: kibana-ingress
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /$1
 # spec:
 #   rules:
 #     - host: pgc-profe.info
 #       http:
 #         paths:
-#           - path: /kibana
+#           - path: /kibana/?(.*)
 #             pathType: Prefix
 #             backend:
 #               service:
@@ -558,12 +564,14 @@ spec:
 # kind: Ingress
 # metadata:
 #   name: kibana-dashboard-ingress
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /$1
 # spec:
 #   rules:
 #     - host: pgc-profe.info
 #       http:
 #         paths:
-#           - path: /kibana-dashboard
+#           - path: /kibana-dashboard/?(.*)
 #             pathType: Prefix
 #             backend:
 #               service:
@@ -576,12 +584,14 @@ spec:
 # kind: Ingress
 # metadata:
 #   name: opencpu-ingress
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /$1
 # spec:
 #   rules:
 #     - host: pgc-profe.info
 #       http:
 #         paths:
-#           - path: /opencpu
+#           - path: /opencpu/?(.*)
 #             pathType: Prefix
 #             backend:
 #               service:
@@ -594,12 +604,14 @@ spec:
 # kind: Ingress
 # metadata:
 #   name: minio-ingress
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /$1
 # spec:
 #   rules:
 #     - host: pgc-profe.info
 #       http:
 #         paths:
-#           - path: /minio
+#           - path: /minio/?(.*)
 #             pathType: Prefix
 #             backend:
 #               service:
@@ -612,12 +624,14 @@ spec:
 # kind: Ingress
 # metadata:
 #   name: molgenis-ingress
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /$1
 # spec:
 #   rules:
 #     - host: pgc-profe.info
 #       http:
 #         paths:
-#           - path: /molgenis
+#           - path: /molgenis/?(.*)
 #             pathType: Prefix
 #             backend:
 #               service:
@@ -630,12 +644,14 @@ spec:
 # kind: Ingress
 # metadata:
 #   name: frontend-ingress
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /$1
 # spec:
 #   rules:
 #     - host: pgc-profe.info
 #       http:
 #         paths:
-#           - path: /frontend
+#           - path: /frontend/?(.*)
 #             pathType: Prefix
 #             backend:
 #               service:
