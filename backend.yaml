@@ -11,7 +11,7 @@ data:
      location / {
         resolver kube-dns.kube-system.svc.cluster.local;
         proxy_pass http://molgenis.ramses.i3m.upv.es;
-        client_max_body_size 0;
+        client_max_body_size 500M;
         proxy_read_timeout 600s;
       }
 
@@ -23,9 +23,6 @@ metadata:
   name: nginxconf
   namespace: eucaim
 data:
-#        proxy_set_header X-Forwarded-Port $server_port;
-#        proxy_set_header X-Forwarded-Host $server_name;
-#        proxy_pass http://molgenis.eucaim.svc.cluster.local:8080;
   nginx.conf: |-
     user  nginx;
     worker_processes  1;
@@ -46,10 +43,311 @@ data:
                           '"$http_user_agent" "$http_x_forwarded_for"';
     
         access_log  /var/log/nginx/access.log  main;
-        client_max_body_size 5M;
+        client_max_body_size 500M;
         sendfile        on;
         #tcp_nopush     on;
         keepalive_timeout  65;
         #gzip  on;
         include /etc/nginx/conf.d/*.conf;
     }
+
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tomcat-webxml
+  namespace: eucaim
+data:
+  web.xml: |-
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!--
+      Licensed to the Apache Software Foundation (ASF) under one or more
+      contributor license agreements.  See the NOTICE file distributed with
+      this work for additional information regarding copyright ownership.
+      The ASF licenses this file to You under the Apache License, Version 2.0
+      (the "License"); you may not use this file except in compliance with
+      the License.  You may obtain a copy of the License at
+    
+          http://www.apache.org/licenses/LICENSE-2.0
+    
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+    -->
+    <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                          http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+      version="4.0"
+      metadata-complete="true">
+
+      <multipart-config>
+        <!-- 50MB max -->
+        <max-file-size>104857600</max-file-size>
+        <max-request-size>209715200</max-request-size>
+        <file-size-threshold>0</file-size-threshold>
+      </multipart-config>
+    
+      <display-name>Tomcat Documentation</display-name>
+      <description>
+         Tomcat Documentation.
+      </description>
+    </web-app>
+
+
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tomcat-serverxml
+  namespace: eucaim
+data:
+  server.xml: |-
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!--
+      Licensed to the Apache Software Foundation (ASF) under one or more
+      contributor license agreements.  See the NOTICE file distributed with
+      this work for additional information regarding copyright ownership.
+      The ASF licenses this file to You under the Apache License, Version 2.0
+      (the "License"); you may not use this file except in compliance with
+      the License.  You may obtain a copy of the License at
+    
+          http://www.apache.org/licenses/LICENSE-2.0
+    
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+    -->
+    <!-- Note:  A "Server" is not itself a "Container", so you may not
+         define subcomponents such as "Valves" at this level.
+         Documentation at /docs/config/server.html
+     -->
+    <Server port="8005" shutdown="SHUTDOWN">
+      <Listener className="org.apache.catalina.startup.VersionLoggerListener" />
+      <!-- Security listener. Documentation at /docs/config/listeners.html
+      <Listener className="org.apache.catalina.security.SecurityListener" />
+      -->
+      <!--APR library loader. Documentation at /docs/apr.html -->
+      <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+      <!-- Prevent memory leaks due to use of particular java/javax APIs-->
+      <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+      <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+      <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+    
+      <!-- Global JNDI resources
+           Documentation at /docs/jndi-resources-howto.html
+      -->
+      <GlobalNamingResources>
+        <!-- Editable user database that can also be used by
+             UserDatabaseRealm to authenticate users
+        -->
+        <Resource name="UserDatabase" auth="Container"
+          type="org.apache.catalina.UserDatabase"
+          description="User database that can be updated and saved"
+          factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+          pathname="conf/tomcat-users.xml" />
+      </GlobalNamingResources>
+    
+      <!-- A "Service" is a collection of one or more "Connectors" that share
+           a single "Container" Note:  A "Service" is not itself a "Container",
+           so you may not define subcomponents such as "Valves" at this level.
+           Documentation at /docs/config/service.html
+       -->
+      <Service name="Catalina">
+    
+        <!--The connectors can use a shared executor, you can define one or more named thread pools-->
+        <!--
+        <Executor name="tomcatThreadPool" namePrefix="catalina-exec-"
+            maxThreads="150" minSpareThreads="4"/>
+        -->
+    
+    
+        <!-- A "Connector" represents an endpoint by which requests are received
+             and responses are returned. Documentation at :
+             Java HTTP Connector: /docs/config/http.html
+             Java AJP  Connector: /docs/config/ajp.html
+             APR (HTTP/AJP) Connector: /docs/apr.html
+             Define a non-SSL/TLS HTTP/1.1 Connector on port 8080
+        -->
+        <Connector port="8080" protocol="HTTP/1.1"
+          connectionTimeout="20000"
+          maxSwallowSize="${TOMCAT_MAX_SWALLOWSIZE:-536870912}"
+          URIEncoding="UTF-8"
+          compression="on"
+          maxPostSize="209715200"
+          compressableMimeType="text/html,application/javascript,application/json" >
+          <UpgradeProtocol className="org.apache.coyote.http2.Http2Protocol"/>
+        </Connector>
+        <!-- A "Connector" using the shared thread pool-->
+        <!--
+        <Connector executor="tomcatThreadPool"
+                   port="8080" protocol="HTTP/1.1"
+                   connectionTimeout="20000"
+                   redirectPort="8443" />
+        -->
+        <!-- Define a SSL/TLS HTTP/1.1 Connector on port 8443
+             This connector uses the NIO implementation. The default
+             SSLImplementation will depend on the presence of the APR/native
+             library and the useOpenSSL attribute of the
+             AprLifecycleListener.
+             Either JSSE or OpenSSL style configuration may be used regardless of
+             the SSLImplementation selected. JSSE style configuration is used below.
+        -->
+        <!--
+        <Connector port="8443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+                   maxThreads="150" SSLEnabled="true">
+            <SSLHostConfig>
+                <Certificate certificateKeystoreFile="conf/localhost-rsa.jks"
+                             type="RSA" />
+            </SSLHostConfig>
+        </Connector>
+        -->
+        <!-- Define a SSL/TLS HTTP/1.1 Connector on port 8443 with HTTP/2
+             This connector uses the APR/native implementation which always uses
+             OpenSSL for TLS.
+             Either JSSE or OpenSSL style configuration may be used. OpenSSL style
+             configuration is used below.
+        -->
+        <!--
+        <Connector port="8443" protocol="org.apache.coyote.http11.Http11AprProtocol"
+                   maxThreads="150" SSLEnabled="true" >
+            <UpgradeProtocol className="org.apache.coyote.http2.Http2Protocol" />
+            <SSLHostConfig>
+                <Certificate certificateKeyFile="conf/localhost-rsa-key.pem"
+                             certificateFile="conf/localhost-rsa-cert.pem"
+                             certificateChainFile="conf/localhost-rsa-chain.pem"
+                             type="RSA" />
+            </SSLHostConfig>
+        </Connector>
+        -->
+    
+        <!-- An Engine represents the entry point (within Catalina) that processes
+             every request.  The Engine implementation for Tomcat stand alone
+             analyzes the HTTP headers included with the request, and passes them
+             on to the appropriate Host (virtual host).
+             Documentation at /docs/config/engine.html -->
+    
+        <!-- You should set jvmRoute to support load-balancing via AJP ie :
+        <Engine name="Catalina" defaultHost="localhost" jvmRoute="jvm1">
+        -->
+        <Engine name="Catalina" defaultHost="localhost">
+    
+          <!--For clustering, please take a look at documentation at:
+              /docs/cluster-howto.html  (simple how to)
+              /docs/config/cluster.html (reference documentation) -->
+          <!--
+          <Cluster className="org.apache.catalina.ha.tcp.SimpleTcpCluster"/>
+          -->
+    
+          <!-- Use the LockOutRealm to prevent attempts to guess user passwords
+               via a brute-force attack -->
+          <Realm className="org.apache.catalina.realm.LockOutRealm">
+            <!-- This Realm uses the UserDatabase configured in the global JNDI
+                 resources under the key "UserDatabase".  Any edits
+                 that are performed against this UserDatabase are immediately
+                 available for use by the Realm.  -->
+            <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
+              resourceName="UserDatabase"/>
+          </Realm>
+    
+          <Host name="localhost"  appBase="webapps"
+            unpackWARs="true" autoDeploy="true">
+    
+            <!-- SingleSignOn valve, share authentication between web applications
+                 Documentation at: /docs/config/valve.html -->
+            <!--
+            <Valve className="org.apache.catalina.authenticator.SingleSignOn" />
+            -->
+        
+            <!-- Access log processes all example.
+                 Documentation at: /docs/config/valve.html
+                 Note: The pattern used is equivalent to using pattern="common" -->
+            <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+              prefix="localhost_access_log" suffix=".txt"
+              pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+    
+          </Host>
+        </Engine>
+      </Service>
+    </Server>
+
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ltsconf
+  namespace: eucaim
+data:
+  lts.conf: |-
+     #
+     # LTS - Long time support
+     #
+     # These versions are exact and not dynamic
+     #
+     # This rewrites the incoming request uri to a specific version of the application
+     # So incoming is for example: /@molgenis-ui/security/dist/js/app.js
+     # This is changed to /@molgenis-ui/security@0.1.6/dist/js/app.js
+     #
+     #  rewrite ^/(.*)/app-manager/(.*)$            /$1/app-manager@~1.1/$2               break;
+     #  rewrite ^/(.*)/legacy-lib/(.*)$             /$1/legacy-lib@~1.1/$2                break;
+     #  rewrite ^/(.*)/core-ui/(.*)$                /$1/core-ui@~0.5/$2                   break;
+     #  rewrite ^/(.*)/metadata-manager/(.*)$       /$1/metadata-manager@~0.2/$2          break;
+     #  rewrite ^/(.*)/one-click-importer/(.*)$     /$1/one-click-importer@~0.1/$2        break;
+     #  rewrite ^/(.*)/questionnaires/(.*)$         /$1/questionnaires@~3.4/$2            break;
+     #  rewrite ^/(.*)/scripts/(.*)$                /$1/scripts@~3.4/$2                   break;
+     #  rewrite ^/(.*)/searchall/(.*)$              /$1/searchall@~0.1/$2                 break;
+     #  rewrite ^/(.*)/security/(.*)$               /$1/security@~0.5/$2                  break;
+     #  rewrite ^/(.*)/settings/(.*)$               /$1/settings@~4.4/$2                  break;
+     #  rewrite ^/(.*)/data-explorer/(.*)$          /$1/data-explorer@~3.13/$2           break;
+     #  rewrite ^/(.*)/molgenis-theme/(.*)$         /$1/molgenis-theme@latest/$2           break;
+     #  rewrite ^/(.*)/data-row-edit/(.*)$          /$1/data-row-edit@~5.6/$2             break;
+     #  rewrite ^/(.*)/data-row-permissions/(.*)$   /$1/data-row-permissions@~0.3/$2      break;
+     #  rewrite ^/(.*)/navigator/(.*)$              /$1/navigator@~0.3/$2                 break; # Deprecated
+     
+     location /@molgenis-ui/ {
+     
+       rewrite ^/(.*)/app-manager/(.*)$            https://eucaim.ramses.i3m.upv.es/molgenis-ui/app-manager/$2               break;
+       rewrite ^/(.*)/core-ui/(.*)$                https://eucaim.ramses.i3m.upv.es/molgenis-ui/core-ui/$2                   break;
+       rewrite ^/(.*)/legacy-lib/(.*)$             https://eucaim.ramses.i3m.upv.es/molgenis-ui/legacy-lib/$2                break;
+       rewrite ^/(.*)/metadata-manager/(.*)$       https://eucaim.ramses.i3m.upv.es/molgenis-ui/metadata-manager/$2          break;
+       rewrite ^/(.*)/one-click-importer/(.*)$     https://eucaim.ramses.i3m.upv.es/molgenis-ui/one-click-importer/$2        break;
+       rewrite ^/(.*)/questionnaires/(.*)$         https://eucaim.ramses.i3m.upv.es/molgenis-ui/questionnaires/$2            break;
+       rewrite ^/(.*)/scripts/(.*)$                https://eucaim.ramses.i3m.upv.es/molgenis-ui/scripts/$2                   break;
+       rewrite ^/(.*)/searchall/(.*)$              https://eucaim.ramses.i3m.upv.es/molgenis-ui/searchall/$2                 break;
+       rewrite ^/(.*)/security/(.*)$               https://eucaim.ramses.i3m.upv.es/molgenis-ui/security/$2                  break;
+       rewrite ^/(.*)/settings/(.*)$               https://eucaim.ramses.i3m.upv.es/molgenis-ui/settings/$2                  break;
+       rewrite ^/(.*)/data-explorer/(.*)$          https://eucaim.ramses.i3m.upv.es/molgenis-ui/data-explorer3/$2            break;
+       rewrite ^/(.*)/molgenis-theme/(.*)$         https://eucaim.ramses.i3m.upv.es/molgenis-ui/molgenis-themest/$2          break;
+       rewrite ^/(.*)/data-row-edit/(.*)$          https://eucaim.ramses.i3m.upv.es/molgenis-ui/data-row-edit/$2             break;
+       rewrite ^/(.*)/data-row-permissions/(.*)$   https://eucaim.ramses.i3m.upv.es/molgenis-ui/data-row-permissions/$2      break;
+       rewrite ^/(.*)/navigator/(.*)$              https://eucaim.ramses.i3m.upv.es/molgenis-ui/navigator/$2                 break; # Deprecated
+     
+       #   proxy_pass https://unpkg.com/@molgenis-ui/;
+       proxy_ssl_server_name on;
+       proxy_intercept_errors on;
+       recursive_error_pages on;
+       error_page 301 302 307 = @handle_redirect;
+     
+       # do not cache these lts rewrites too long
+       expires 10m;
+     }
+     
+     location /@molgenis/ {
+       rewrite ^/(.*)/expressions(/(.*))?$            https://unpkg.com/@molgenis/expressions@~0.21$2       redirect;
+       rewrite ^/(.*)/molgenis-ui-form(/(.*))?$       https://eucaim.ramses.i3m.upv.es/molgenis/molgenis-ui-form/dist/static redirect;
+     
+       # do not cache these redirects too long
+       expires 10m;
+     }
+
+
+     #rewrite ^/(.*)/molgenis-ui-form(/(.*))?$       https://eucaim.ramses.i3m.upv.es/molgenis-ui/molgenis-ui-form redirect;
+
+       #rewrite ^/(.*)/molgenis-ui-form(/(.*))?$       https://unpkg.com/@molgenis/molgenis-ui-form@~5.9$2   redirect;
