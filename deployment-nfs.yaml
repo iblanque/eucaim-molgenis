@@ -392,7 +392,6 @@ spec:
               value: "150"
             - name: audit.log.path
               value: "/home/molgenis/audit/audit.log"
-
 #        value: "jdbc:postgresql://postgres/molgenis"
 #      - name: CATALINA_OPTS
 #        value: "Xmx1g"
@@ -479,7 +478,6 @@ spec:
           items:
           - key: lts.conf
             path: lts.conf
-
 ---
 # service
 kind: Service

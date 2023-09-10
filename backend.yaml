@@ -351,3 +351,4 @@ data:
      #rewrite ^/(.*)/molgenis-ui-form(/(.*))?$       https://eucaim.ramses.i3m.upv.es/molgenis-ui/molgenis-ui-form redirect;
 
        #rewrite ^/(.*)/molgenis-ui-form(/(.*))?$       https://unpkg.com/@molgenis/molgenis-ui-form@~5.9$2   redirect;
+
