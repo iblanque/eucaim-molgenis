@@ -399,13 +399,13 @@ spec:
 #      - name: createDirs # supposedly for tomcat configuration, not working
 #        value: "false"
 ---
+
 # service
 kind: Service
 apiVersion: v1
 metadata:
   name: molgenis
 spec:
-  type: NodePort
   selector:
     app: molgenis
   ports:
@@ -413,7 +413,7 @@ spec:
     port: 8080
     targetPort: 8080
     name: molgenis-np
-    nodePort: 8080
+
 ---
 #
 #  Front-end
@@ -487,7 +487,6 @@ apiVersion: v1
 metadata:
   name: frontend
 spec:
-  type: NodePort
   selector:
     app: frontend
   ports:
@@ -495,169 +494,170 @@ spec:
     port: 80
     name: frontend-np
     targetPort: 80
-    nodePort: 30010
 
 
+#cancerimage.eu
+#pgc-profe.info
 ########### INGRESS ######
 # POSTGRES
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: postgres-ingress
-#   annotations:
-#     nginx.ingress.kubernetes.io/rewrite-target: /$1
-# spec:
-#   rules:
-#     - host: pgc-profe.info
-#       http:
-#         paths:
-#           - path: /postgres/?(.*)
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: postgres
-#                 port:
-#                   number: 5432
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: postgres-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: cancerimage.eu
+      http:
+        paths:
+          - path: /postgres/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: postgres
+                port:
+                  number: 5432
 
 # ELASTICSEARCH
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: elasticsearch-ingress
-#   annotations:
-#     nginx.ingress.kubernetes.io/rewrite-target: /$1
-# spec:
-#   rules:
-#     - host: pgc-profe.info
-#       http:
-#         paths:
-#           - path: /elasticsearch/?(.*)
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: es
-#                 port:
-#                   number: 9200
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: elasticsearch-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: cancerimage.eu
+      http:
+        paths:
+          - path: /elasticsearch/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: es
+                port:
+                  number: 9200
 
 # KIBANA
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: kibana-ingress
-#   annotations:
-#     nginx.ingress.kubernetes.io/rewrite-target: /$1
-# spec:
-#   rules:
-#     - host: pgc-profe.info
-#       http:
-#         paths:
-#           - path: /kibana/?(.*)
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: kibana
-#                 port:
-#                   number: 5601
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kibana-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: cancerimage.eu
+      http:
+        paths:
+          - path: /kibana/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: kibana
+                port:
+                  number: 5601
 
 # KIBANA DASHBOARD
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: kibana-dashboard-ingress
-#   annotations:
-#     nginx.ingress.kubernetes.io/rewrite-target: /$1
-# spec:
-#   rules:
-#     - host: pgc-profe.info
-#       http:
-#         paths:
-#           - path: /kibana-dashboard/?(.*)
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: kibana-dashboard
-#                 port:
-#                   number: 5601
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kibana-dashboard-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: cancerimage.eu
+      http:
+        paths:
+          - path: /kibana-dashboard/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: kibana-dashboard
+                port:
+                  number: 5601
 
 # OPEN CPU
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: opencpu-ingress
-#   annotations:
-#     nginx.ingress.kubernetes.io/rewrite-target: /$1
-# spec:
-#   rules:
-#     - host: pgc-profe.info
-#       http:
-#         paths:
-#           - path: /opencpu/?(.*)
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: opencpu
-#                 port:
-#                   number: 8004
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: opencpu-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: cancerimage.eu
+      http:
+        paths:
+          - path: /opencpu/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: opencpu
+                port:
+                  number: 8004
 
 # MINIO
-#apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: minio-ingress
-#   annotations:
-#     nginx.ingress.kubernetes.io/rewrite-target: /$1
-# spec:
-#   rules:
-#     - host: pgc-profe.info
-#       http:
-#         paths:
-#           - path: /minio/?(.*)
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: minio
-#                 port:
-#                   number: 9000
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minio-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: cancerimage.eu
+      http:
+        paths:
+          - path: /minio/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: minio
+                port:
+                  number: 9000
 
 # MOLGENIS
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: molgenis-ingress
-#   annotations:
-#     nginx.ingress.kubernetes.io/rewrite-target: /$1
-# spec:
-#   rules:
-#     - host: pgc-profe.info
-#       http:
-#         paths:
-#           - path: /molgenis/?(.*)
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: molgenis
-#                 port:
-#                   number: 8080
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: molgenis-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: cancerimage.eu
+      http:
+        paths:
+          - path: /molgenis/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: molgenis
+                port:
+                  number: 8080
 
 # FRONTEND
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: frontend-ingress
-#   annotations:
-#     nginx.ingress.kubernetes.io/rewrite-target: /$1
-# spec:
-#   rules:
-#     - host: pgc-profe.info
-#       http:
-#         paths:
-#           - path: /frontend/?(.*)
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: frontend
-#                 port:
-#                   number: 80
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: cancerimage.eu
+      http:
+        paths:
+          - path: /catalogue/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
 
 
 
