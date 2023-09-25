@@ -9,7 +9,7 @@ metadata:
   labels:
     app: postgres
 spec:
-  replicas: 1  
+  replicas: 1
   selector:
     matchLabels:
       app: postgres
@@ -25,11 +25,11 @@ spec:
         - containerPort: 5432
         env:
         - name: POSTGRES_USER
-          value: "molgenis"
+          value: "xxusernamexx"
         - name: POSTGRES_PASSWORD
-          value: "molgenis"
+          value: "xxpasswordxx"
         - name: POSTGRES_DB
-          value: "molgenis"
+          value: "xxdbxx"
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: db-data
@@ -73,7 +73,7 @@ metadata:
   labels:
     app: elasticsearch
 spec:
-  replicas: 1 
+  replicas: 1
   selector:
     matchLabels:
       app: elasticsearch
@@ -133,7 +133,7 @@ metadata:
   labels:
     app: kibana
 spec:
-  replicas: 1 
+  replicas: 1
   selector:
     matchLabels:
       app: kibana
@@ -213,7 +213,7 @@ metadata:
   labels:
     app: opencpu
 spec:
-  replicas: 1  
+  replicas: 1
   selector:
     matchLabels:
       app: opencpu
@@ -252,7 +252,7 @@ metadata:
   labels:
     app: minio
 spec:
-  replicas: 1 
+  replicas: 1
   selector:
     matchLabels:
       app: minio
@@ -269,9 +269,9 @@ spec:
           name: minio-data
         env:
         - name: MINIO_ACCESS_KEY
-          value: "molgenis"
+          value: "xxminiokeyxx"
         - name: MINIO_SECRET_KEY
-          value: "molgenis"
+          value: "xxminiosecretxx"
         command:
         - /bin/bash
         - -c
@@ -311,7 +311,7 @@ metadata:
   labels:
     app: molgenis
 spec:
-  replicas: 1  
+  replicas: 1
   selector:
     matchLabels:
       app: molgenis
@@ -365,9 +365,9 @@ spec:
             - name: molgenis.home
               value: "/home/molgenis"
             - name: mail.username
-              value: "ibespert@gmail.com"
+              value: "xx@xxxxmail.com"
             - name: mail.password
-              value: "mhNt22aymhAt18.5a"
+              value: "xxxxxxxxxx"
             - name: opencpu.uri.host
               value: "opencpu"
             - name: elasticsearch.hosts
@@ -375,19 +375,19 @@ spec:
             - name: db_uri
               value: "jdbc:postgresql://postgres:5432/molgenis"
             - name: db_user
-              value: "molgenis"
+              value: "xxxxxxx"
             - name: db_password
-              value: "molgenis"
+              value: "xxxxxxx"
             - name: admin.password
-              value: "admin"
+              value: "axxxxxx"
             - name: MINIO_BUCKET_NAME
-              value: "molgenis"
+              value: "xxxxxxx"
             - name: MINIO_ENDPOINT
               value: "http://minio:9000"
             - name: MINIO_ACCESS_KEY
-              value: "molgenis"
+              value: "xxxxxxx"
             - name: MINIO_SECRET_KEY
-              value: "molgenis"
+              value: "xxxxxxx"
             - name: MOLGENIS_MAX_FILE_MB
               value: "150"
             - name: audit.log.path
@@ -408,11 +408,13 @@ metadata:
 spec:
   selector:
     app: molgenis
+  type: NodePort
   ports:
   - protocol: TCP
+    nodePort: 8080
     port: 8080
-    targetPort: 8080
     name: molgenis-np
+    targetPort: 8080
 
 ---
 #
@@ -425,7 +427,7 @@ metadata:
   labels:
      app: frontend
 spec:
-  replicas: 1  
+  replicas: 1
   selector:
     matchLabels:
       app: frontend
@@ -489,175 +491,53 @@ metadata:
 spec:
   selector:
     app: frontend
+  type: NodePort
   ports:
   - protocol: TCP
+    nodePort: 22896
     port: 80
-    name: frontend-np
+    name: frontend-port
+    targetPort: 80
+  - protocol: TCP
+    nodePort: 30010
+    port: 8000
+    name: frontend
     targetPort: 80
 
-
+---
 #cancerimage.eu
 #pgc-profe.info
 ########### INGRESS ######
-# POSTGRES
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: postgres-ingress
+  name: cancerimage-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    #nginx.ingress.kubernetes.io/configuration-snippet: |
+    #  rewrite /molgenis http://catalogue.ramses.i3m.upv.es/ permanent;
+    #  rewrite /catalog http://catalogue.ramses.i3m.upv.es/ permanent;
+    #nginx.ingress.kubernetes.io/rewrite-target: /$2
+    #nginx.ingress.kubernetes.io/use-regex: 'true'
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
-  rules:
-    - host: cancerimage.eu
-      http:
-        paths:
-          - path: /postgres/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: postgres
-                port:
-                  number: 5432
+  tls:
+  #- hosts:
+  #  - catalogue.ramses.i3m.upv.es
+  #  secretName: catalogue.ramses.i3m.upv.es
+  - hosts:
+    - catalogue.eucaim.cancerimage.eu
+    secretName: catalogue.eucaim.cancerimage.eu
 
-# ELASTICSEARCH
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: elasticsearch-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-spec:
   rules:
-    - host: cancerimage.eu
+    - host: catalogue.eucaim.cancerimage.eu
       http:
         paths:
-          - path: /elasticsearch/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: es
-                port:
-                  number: 9200
-
-# KIBANA
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: kibana-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-spec:
-  rules:
-    - host: cancerimage.eu
-      http:
-        paths:
-          - path: /kibana/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: kibana
-                port:
-                  number: 5601
-
-# KIBANA DASHBOARD
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: kibana-dashboard-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-spec:
-  rules:
-    - host: cancerimage.eu
-      http:
-        paths:
-          - path: /kibana-dashboard/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: kibana-dashboard
-                port:
-                  number: 5601
-
-# OPEN CPU
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: opencpu-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-spec:
-  rules:
-    - host: cancerimage.eu
-      http:
-        paths:
-          - path: /opencpu/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: opencpu
-                port:
-                  number: 8004
-
-# MINIO
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: minio-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-spec:
-  rules:
-    - host: cancerimage.eu
-      http:
-        paths:
-          - path: /minio/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: minio
-                port:
-                  number: 9000
-
-# MOLGENIS
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: molgenis-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-spec:
-  rules:
-    - host: cancerimage.eu
-      http:
-        paths:
-          - path: /molgenis/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: molgenis
-                port:
-                  number: 8080
-
-# FRONTEND
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: frontend-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-spec:
-  rules:
-    - host: cancerimage.eu
-      http:
-        paths:
-          - path: /catalogue/?(.*)
+          - path: /
             pathType: Prefix
             backend:
               service:
                 name: frontend
                 port:
                   number: 80
-
-
-

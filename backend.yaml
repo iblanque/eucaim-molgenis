@@ -10,7 +10,9 @@ data:
   backend.conf: |-
      location / {
         resolver kube-dns.kube-system.svc.cluster.local;
-        proxy_pass http://molgenis.ramses.i3m.upv.es;
+        #proxy_pass https://eucaim.cancerimage.eu/molgenis/molgenis;
+        #proxy_pass http://molgenis.ramses.i3m.upv.es;
+        proxy_pass http://molgenis:8080;
         client_max_body_size 500M;
         proxy_read_timeout 600s;
       }
@@ -37,11 +39,11 @@ data:
     http {
         include       /etc/nginx/mime.types;
         default_type  application/octet-stream;
-    
+
         log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
                           '$status $body_bytes_sent "$http_referer" '
                           '"$http_user_agent" "$http_x_forwarded_for"';
-    
+
         access_log  /var/log/nginx/access.log  main;
         client_max_body_size 500M;
         sendfile        on;
@@ -68,9 +70,9 @@ data:
       The ASF licenses this file to You under the Apache License, Version 2.0
       (the "License"); you may not use this file except in compliance with
       the License.  You may obtain a copy of the License at
-    
+
           http://www.apache.org/licenses/LICENSE-2.0
-    
+
       Unless required by applicable law or agreed to in writing, software
       distributed under the License is distributed on an "AS IS" BASIS,
       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -90,7 +92,7 @@ data:
         <max-request-size>209715200</max-request-size>
         <file-size-threshold>0</file-size-threshold>
       </multipart-config>
-    
+
       <display-name>Tomcat Documentation</display-name>
       <description>
          Tomcat Documentation.
@@ -115,9 +117,9 @@ data:
       The ASF licenses this file to You under the Apache License, Version 2.0
       (the "License"); you may not use this file except in compliance with
       the License.  You may obtain a copy of the License at
-    
+
           http://www.apache.org/licenses/LICENSE-2.0
-    
+
       Unless required by applicable law or agreed to in writing, software
       distributed under the License is distributed on an "AS IS" BASIS,
       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -139,7 +141,7 @@ data:
       <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
       <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
       <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
-    
+
       <!-- Global JNDI resources
            Documentation at /docs/jndi-resources-howto.html
       -->
@@ -153,21 +155,21 @@ data:
           factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
           pathname="conf/tomcat-users.xml" />
       </GlobalNamingResources>
-    
+
       <!-- A "Service" is a collection of one or more "Connectors" that share
            a single "Container" Note:  A "Service" is not itself a "Container",
            so you may not define subcomponents such as "Valves" at this level.
            Documentation at /docs/config/service.html
        -->
       <Service name="Catalina">
-    
+
         <!--The connectors can use a shared executor, you can define one or more named thread pools-->
         <!--
         <Executor name="tomcatThreadPool" namePrefix="catalina-exec-"
             maxThreads="150" minSpareThreads="4"/>
         -->
-    
-    
+
+
         <!-- A "Connector" represents an endpoint by which requests are received
              and responses are returned. Documentation at :
              Java HTTP Connector: /docs/config/http.html
@@ -226,25 +228,25 @@ data:
             </SSLHostConfig>
         </Connector>
         -->
-    
+
         <!-- An Engine represents the entry point (within Catalina) that processes
              every request.  The Engine implementation for Tomcat stand alone
              analyzes the HTTP headers included with the request, and passes them
              on to the appropriate Host (virtual host).
              Documentation at /docs/config/engine.html -->
-    
+
         <!-- You should set jvmRoute to support load-balancing via AJP ie :
         <Engine name="Catalina" defaultHost="localhost" jvmRoute="jvm1">
         -->
         <Engine name="Catalina" defaultHost="localhost">
-    
+
           <!--For clustering, please take a look at documentation at:
               /docs/cluster-howto.html  (simple how to)
               /docs/config/cluster.html (reference documentation) -->
           <!--
           <Cluster className="org.apache.catalina.ha.tcp.SimpleTcpCluster"/>
           -->
-    
+
           <!-- Use the LockOutRealm to prevent attempts to guess user passwords
                via a brute-force attack -->
           <Realm className="org.apache.catalina.realm.LockOutRealm">
@@ -255,23 +257,24 @@ data:
             <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
               resourceName="UserDatabase"/>
           </Realm>
-    
+
           <Host name="localhost"  appBase="webapps"
             unpackWARs="true" autoDeploy="true">
-    
+            <!-- <Context path=\"/molgenis\" docBase=\"ROOT\"/> -->
+
             <!-- SingleSignOn valve, share authentication between web applications
                  Documentation at: /docs/config/valve.html -->
             <!--
             <Valve className="org.apache.catalina.authenticator.SingleSignOn" />
             -->
-        
+
             <!-- Access log processes all example.
                  Documentation at: /docs/config/valve.html
                  Note: The pattern used is equivalent to using pattern="common" -->
             <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
               prefix="localhost_access_log" suffix=".txt"
               pattern="%h %l %u %t &quot;%r&quot; %s %b" />
-    
+
           </Host>
         </Engine>
       </Service>
@@ -310,39 +313,55 @@ data:
      #  rewrite ^/(.*)/data-row-edit/(.*)$          /$1/data-row-edit@~5.6/$2             break;
      #  rewrite ^/(.*)/data-row-permissions/(.*)$   /$1/data-row-permissions@~0.3/$2      break;
      #  rewrite ^/(.*)/navigator/(.*)$              /$1/navigator@~0.3/$2                 break; # Deprecated
-     
+
      location /@molgenis-ui/ {
-     
-       rewrite ^/(.*)/app-manager/(.*)$            https://eucaim.ramses.i3m.upv.es/molgenis-ui/app-manager/$2               break;
-       rewrite ^/(.*)/core-ui/(.*)$                https://eucaim.ramses.i3m.upv.es/molgenis-ui/core-ui/$2                   break;
-       rewrite ^/(.*)/legacy-lib/(.*)$             https://eucaim.ramses.i3m.upv.es/molgenis-ui/legacy-lib/$2                break;
-       rewrite ^/(.*)/metadata-manager/(.*)$       https://eucaim.ramses.i3m.upv.es/molgenis-ui/metadata-manager/$2          break;
-       rewrite ^/(.*)/one-click-importer/(.*)$     https://eucaim.ramses.i3m.upv.es/molgenis-ui/one-click-importer/$2        break;
-       rewrite ^/(.*)/questionnaires/(.*)$         https://eucaim.ramses.i3m.upv.es/molgenis-ui/questionnaires/$2            break;
-       rewrite ^/(.*)/scripts/(.*)$                https://eucaim.ramses.i3m.upv.es/molgenis-ui/scripts/$2                   break;
-       rewrite ^/(.*)/searchall/(.*)$              https://eucaim.ramses.i3m.upv.es/molgenis-ui/searchall/$2                 break;
-       rewrite ^/(.*)/security/(.*)$               https://eucaim.ramses.i3m.upv.es/molgenis-ui/security/$2                  break;
-       rewrite ^/(.*)/settings/(.*)$               https://eucaim.ramses.i3m.upv.es/molgenis-ui/settings/$2                  break;
-       rewrite ^/(.*)/data-explorer/(.*)$          https://eucaim.ramses.i3m.upv.es/molgenis-ui/data-explorer3/$2            break;
-       rewrite ^/(.*)/molgenis-theme/(.*)$         https://eucaim.ramses.i3m.upv.es/molgenis-ui/molgenis-themest/$2          break;
-       rewrite ^/(.*)/data-row-edit/(.*)$          https://eucaim.ramses.i3m.upv.es/molgenis-ui/data-row-edit/$2             break;
-       rewrite ^/(.*)/data-row-permissions/(.*)$   https://eucaim.ramses.i3m.upv.es/molgenis-ui/data-row-permissions/$2      break;
-       rewrite ^/(.*)/navigator/(.*)$              https://eucaim.ramses.i3m.upv.es/molgenis-ui/navigator/$2                 break; # Deprecated
-     
+
+       #rewrite ^/(.*)/app-manager/(.*)$            /$1/molgenis-ui/app-manager/$2               break;
+       #rewrite ^/(.*)/core-ui/(.*)$                /$1/molgenis-ui/core-ui/$2                   break;
+       #rewrite ^/(.*)/legacy-lib/(.*)$             /$1/molgenis-ui/legacy-lib/$2                break;
+       #rewrite ^/(.*)/metadata-manager/(.*)$       /$1/molgenis-ui/metadata-manager/$2          break;
+       #rewrite ^/(.*)/one-click-importer/(.*)$     /$1/molgenis-ui/one-click-importer/$2        break;
+       #rewrite ^/(.*)/questionnaires/(.*)$         /$1/molgenis-ui/questionnaires/$2            break;
+       #rewrite ^/(.*)/scripts/(.*)$                /$1/molgenis-ui/scripts/$2                   break;
+       #rewrite ^/(.*)/searchall/(.*)$              /$1/molgenis-ui/searchall/$2                 break;
+       #rewrite ^/(.*)/security/(.*)$               /$1/molgenis-ui/security/$2                  break;
+       #rewrite ^/(.*)/settings/(.*)$               /$1/molgenis-ui/settings/$2                  break;
+       #rewrite ^/(.*)/data-explorer/(.*)$          /$1/molgenis-ui/data-explorer/$2            break;
+       #rewrite ^/(.*)/molgenis-theme/(.*)$         /$1/molgenis-ui/molgenis-theme/$2          break;
+       #rewrite ^/(.*)/data-row-edit/(.*)$          /$1/molgenis-ui/data-row-edit/$2             break;
+       #rewrite ^/(.*)/data-row-permissions/(.*)$   /$1/molgenis-ui/data-row-permissions/$2      break;
+       #rewrite ^/(.*)/navigator/(.*)$              /$1/molgenis-ui/navigator/$2                 break; # Deprecated
+       rewrite ^/(.*)/app-manager/(.*)$            /html/molgenis-ui/app-manager/$2               break;
+       rewrite ^/(.*)/core-ui/(.*)$                /html/molgenis-ui/core-ui/$2                   break;
+       rewrite ^/(.*)/legacy-lib/(.*)$             /html/molgenis-ui/legacy-lib/$2                break;
+       rewrite ^/(.*)/metadata-manager/(.*)$       /html/molgenis-ui/metadata-manager/$2          break;
+       rewrite ^/(.*)/one-click-importer/(.*)$     /html/molgenis-ui/one-click-importer/$2        break;
+       rewrite ^/(.*)/questionnaires/(.*)$         /html/molgenis-ui/questionnaires/$2            break;
+       rewrite ^/(.*)/scripts/(.*)$                /html/molgenis-ui/scripts/$2                   break;
+       rewrite ^/(.*)/searchall/(.*)$              /html/molgenis-ui/searchall/$2                 break;
+       rewrite ^/(.*)/security/(.*)$               /html/molgenis-ui/security/$2                  break;
+       rewrite ^/(.*)/settings/(.*)$               /html/molgenis-ui/settings/$2                  break;
+       rewrite ^/(.*)/data-explorer/(.*)$          /html/molgenis-ui/data-explorer/$2            break;
+       rewrite ^/(.*)/molgenis-theme/(.*)$         /html/molgenis-ui/molgenis-theme/$2          break;
+       rewrite ^/(.*)/data-row-edit/(.*)$          /html/molgenis-ui/data-row-edit/$2             break;
+       rewrite ^/(.*)/data-row-permissions/(.*)$   /html/molgenis-ui/data-row-permissions/$2      break;
+       rewrite ^/(.*)/navigator/(.*)$              /html/molgenis-ui/navigator/$2                 break; # Deprecated
+
+       root /usr/share/nginx/;
        #   proxy_pass https://unpkg.com/@molgenis-ui/;
        proxy_ssl_server_name on;
        proxy_intercept_errors on;
        recursive_error_pages on;
        error_page 301 302 307 = @handle_redirect;
-     
+
        # do not cache these lts rewrites too long
        expires 10m;
      }
-     
+
      location /@molgenis/ {
        rewrite ^/(.*)/expressions(/(.*))?$            https://unpkg.com/@molgenis/expressions@~0.21$2       redirect;
-       rewrite ^/(.*)/molgenis-ui-form(/(.*))?$       https://eucaim.ramses.i3m.upv.es/molgenis/molgenis-ui-form/dist/static redirect;
-     
+       rewrite ^/(.*)/molgenis-ui-form(/(.*))?$       /$1/molgenis/molgenis-ui-form/dist/static redirect;
+
        # do not cache these redirects too long
        expires 10m;
      }
